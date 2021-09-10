@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:nfc_flutter/Utils/read_nfc_tag.dart';
+import 'package:nfc_flutter/widgets/actionButtonComponent.dart';
+import 'package:nfc_flutter/widgets/alertDialogComponent.dart';
 
 class HomeView extends StatefulWidget {
   const HomeView({Key? key}) : super(key: key);
@@ -13,7 +16,28 @@ class _HomeViewState extends State<HomeView> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        centerTitle: true,
         title: Text('Home'),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ActionButtonComponent(
+                elevation: 5,
+                labelText: 'Read NFC Tag',
+                borderRadius: 10,
+                highlightColor: Colors.grey.shade300,
+                hoverColor: Colors.white,
+                onPressedCallback: () {
+                  readNFC(context);
+                },
+                onLongPressedCallback: () {}),
+            Text(
+              'Write NFC Tag',
+            ),
+          ],
+        ),
       ),
     );
   }
