@@ -12,9 +12,9 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
+  final appRouter = AppRouter();
   @override
   Widget build(BuildContext context) {
-    final appRouter = AppRouter();
     return MaterialApp.router(
       routeInformationParser: appRouter.defaultRouteParser(),
       routerDelegate: appRouter.delegate(),
