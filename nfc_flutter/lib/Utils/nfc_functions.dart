@@ -5,7 +5,7 @@ import 'package:nfc_manager/nfc_manager.dart';
 Future<bool> readNFC(BuildContext context) async {
   // Check availability
   bool isAvailable = await NfcManager.instance.isAvailable();
-
+  // On NFC functionality available or active
   if (isAvailable) {
     // Pop in awaiting for NFC tag dialog
     showDialog(
@@ -71,7 +71,6 @@ Future<bool> readNFC(BuildContext context) async {
         context: context,
         builder: (context) => AlertDialogComponent(
               isSingleButton: true,
-              // okButtonBorderColor: Colors.transparent,
               okButtonHighlightColor: Colors.grey.shade300,
               okButtonBorderRadius: 10,
               borderColor: Colors.transparent,
@@ -86,4 +85,8 @@ Future<bool> readNFC(BuildContext context) async {
     return false;
   }
   return true;
+}
+
+Future<bool> writeNFC(BuildContext context, String data) async {
+  return false;
 }
