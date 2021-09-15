@@ -1,12 +1,15 @@
-import 'package:flutter/material.dart';
-import 'package:nfc_flutter/widgets/alertDialogComponent.dart';
-import 'package:nfc_manager/nfc_manager.dart';
+import 'dart:async';
 
-Future<bool> readNFC(BuildContext context) async {
+import 'package:flutter/material.dart';
+import 'package:flutter_nfc_kit/flutter_nfc_kit.dart';
+import 'package:nfc_flutter/widgets/alertDialogComponent.dart';
+
+FutureOr readNFC(BuildContext context) async {
   // Check availability
-  bool isAvailable = await NfcManager.instance.isAvailable();
+  var isAvailable = await FlutterNfcKit.nfcAvailability;
+
   // On NFC functionality available or active
-  if (isAvailable) {
+  if (isAvailable == NFCAvailability.available) {
     // Pop in awaiting for NFC tag dialog
     showDialog(
         context: context,
@@ -20,51 +23,40 @@ Future<bool> readNFC(BuildContext context) async {
               descriptionText: 'Awaiting for NFC Tag',
               okButtonText: 'Cancel',
               onCancelCallback: () => null,
-              onOkCallback: () {
-                NfcManager.instance.stopSession();
+              onOkCallback: () async {
+                await FlutterNfcKit.finish();
                 Navigator.of(context).pop(true);
               },
             ));
-    // Start Session
-    NfcManager.instance.startSession(
-      onDiscovered: (tag) async {
-        // Do something with an NfcTag instance.
-        Ndef? ndef = Ndef.from(tag);
-        String hexTag = '';
-        for (int item in ndef?.additionalData.values.first) {
-          hexTag += item.toRadixString(16).padLeft(2, '0').toUpperCase();
-        }
-        print(hexTag);
-        print(ndef?.cachedMessage);
-        if (ndef == null) {
-          print('Tag is not compatible with NDEF');
-          // Stop Session
-          NfcManager.instance.stopSession();
-          return;
-        }
-        // Pop out awaiting dialog and pop in found tag dialog
-        Navigator.of(context).pop(true);
-        showDialog(
-            context: context,
-            builder: (context) => AlertDialogComponent(
-                  isSingleButton: true,
-                  // okButtonBorderColor: Colors.transparent,
-                  okButtonHighlightColor: Colors.grey.shade300,
-                  okButtonBorderRadius: 10,
-                  borderColor: Colors.transparent,
-                  titleText: 'NFC',
-                  descriptionText: 'NFC Tag found',
-                  okButtonText: 'Ok',
-                  onCancelCallback: () => null,
-                  onOkCallback: () {
-                    Navigator.of(context).pop(true);
-                  },
-                ));
-        // Stop Session
-        NfcManager.instance.stopSession();
-        return;
-      },
-    );
+    try {
+      var tag = await FlutterNfcKit.poll();
+
+      // Start Session
+      // Pop out awaiting dialog and pop in found tag dialog
+      Navigator.of(context).pop(true);
+      await FlutterNfcKit.finish();
+      return tag;
+    } catch (e) {
+      // Pop out awaiting dialog and pop in found tag dialog
+      Navigator.of(context).pop(true);
+      showDialog(
+          context: context,
+          builder: (context) => AlertDialogComponent(
+                isSingleButton: true,
+                // okButtonBorderColor: Colors.transparent,
+                okButtonHighlightColor: Colors.grey.shade300,
+                okButtonBorderRadius: 10,
+                borderColor: Colors.transparent,
+                titleText: 'NFC',
+                descriptionText: 'NFC Tag not found (timeout)',
+                okButtonText: 'Ok',
+                onCancelCallback: () => null,
+                onOkCallback: () {
+                  Navigator.of(context).pop(true);
+                },
+              ));
+      return null;
+    }
   } else {
     // Pop in NFC disabled dialog
     showDialog(
@@ -75,16 +67,15 @@ Future<bool> readNFC(BuildContext context) async {
               okButtonBorderRadius: 10,
               borderColor: Colors.transparent,
               titleText: 'NFC',
-              descriptionText: 'NFC is not available or disabled',
+              descriptionText: 'NFC is not supported or disabled',
               okButtonText: 'Ok',
               onCancelCallback: () => null,
               onOkCallback: () {
                 Navigator.of(context).pop(true);
               },
             ));
-    return false;
+    return null;
   }
-  return true;
 }
 
 Future<bool> writeNFC(BuildContext context, String data) async {
