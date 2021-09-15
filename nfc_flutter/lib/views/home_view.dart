@@ -27,36 +27,6 @@ class _HomeViewState extends State<HomeView> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            AnimatedSwitcher(
-              switchInCurve: Curves.decelerate,
-              transitionBuilder: (Widget child, Animation<double> animation) =>
-                  ScaleTransition(child: child, scale: animation),
-              duration: Duration(
-                seconds: 1,
-              ),
-              child: tag == null
-                  ? nfcInfo
-                  : Card(
-                      child: Column(
-                        children: [
-                          Text(
-                            'Identifier',
-                            textScaleFactor: 2,
-                          ),
-                          Divider(
-                            indent: 10,
-                            endIndent: 10,
-                            thickness: 2,
-                            color: Colors.black,
-                          ),
-                          Text(
-                            '${tag?.id}',
-                            textScaleFactor: 1.5,
-                          ),
-                        ],
-                      ),
-                    ),
-            ),
             // Read NFC Tag button
             ActionButtonComponent(
                 elevation: 5,
@@ -78,9 +48,79 @@ class _HomeViewState extends State<HomeView> {
             Text(
               'Write NFC Tag (WIP)',
             ),
+            // Tag data
+            TagData(tag: tag),
           ],
         ),
       ),
+    );
+  }
+}
+
+class TagData extends StatelessWidget {
+  const TagData({
+    Key? key,
+    required this.tag,
+  }) : super(key: key);
+
+  final NFCTag? tag;
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedSwitcher(
+      switchInCurve: Curves.decelerate,
+      transitionBuilder: (Widget child, Animation<double> animation) {
+        final offsetAnimation =
+            Tween<Offset>(begin: Offset(0.0, 5.0), end: Offset(0.0, 0.0))
+                .animate(animation);
+        return SlideTransition(
+          position: offsetAnimation,
+          child: child,
+        );
+      },
+      duration: Duration(
+        seconds: 1,
+      ),
+      child: tag == null
+          ? nfcInfo
+          : Card(
+              child: Column(
+                children: [
+                  Text(
+                    'Identifier',
+                    textScaleFactor: 2,
+                  ),
+                  Divider(
+                    indent: 10,
+                    endIndent: 10,
+                    thickness: 2,
+                    color: Colors.black,
+                  ),
+                  Text(
+                    '${tag?.id}',
+                    textScaleFactor: 1.5,
+                  ),
+                  Divider(
+                    indent: 10,
+                    endIndent: 10,
+                  ),
+                  Text(
+                    'Data',
+                    textScaleFactor: 2,
+                  ),
+                  Divider(
+                    indent: 10,
+                    endIndent: 10,
+                    thickness: 2,
+                    color: Colors.black,
+                  ),
+                  Text(
+                    '${tag?.applicationData}',
+                    textScaleFactor: 1.5,
+                  ),
+                ],
+              ),
+            ),
     );
   }
 }
